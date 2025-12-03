@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: frontend-appset
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/cassiecsouza/workshop-souzatt6243120.git
+        revision: main
+        files:
+        - path: "gitops-workshop/cluster-config/**/config.json"
+  template:
+    metadata:
+      name: '{{.environment}}-frontend'
+      labels:
+        harness.io/envRef: '{{.environment}}'
+        harness.io/serviceRef: '{{.harness_service}}'
+        harness.io/buildRef: '{{.image_tag}}'
+    spec:
+      project: a6a728ad
+      source:
+        repoURL: https://github.com/cassiecsouza/workshop-souzatt6243120.git
+        targetRevision: main
+        path: "gitops-workshop/kustomize/frontend"
+        kustomize:
+          images:
+          - cassiesouza/workshop:{{.image_tag}}
+      destination:
+        server: '{{.server_address}}'
+        namespace: '{{.environment}}-{{.username}}-frontend'
+      syncPolicy:
+        automated:
+          selfHeal: true
+        syncOptions:
+          - PruneLast=true
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true

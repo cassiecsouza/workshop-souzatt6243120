@@ -1,0 +1,8 @@
+{
+  "cluster_name" : "dev",
+  "harness_service" : "frontendgitops",
+  "environment" : "dev",
+  "image_tag" : "cassieatt6240-21",
+  "server_address" : "https://kubernetes.default.svc",
+  "username" : "cassie123"
+}
