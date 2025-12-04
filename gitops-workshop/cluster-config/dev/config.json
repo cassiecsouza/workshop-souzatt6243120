@@ -2,7 +2,7 @@
   "cluster_name" : "dev",
   "harness_service" : "frontend",
   "environment" : "dev",
-  "image_tag" : "souzatt6243120-2",
+  "image_tag" : "souzatt6243120-3",
   "server_address" : "https://kubernetes.default.svc",
   "username" : "cass1223"
 }
