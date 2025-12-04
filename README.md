@@ -85,8 +85,8 @@
 | ----------------- | --------------------------------------------------- | ------------------------------------------------------------------------ |
 | Name              |Push to DockerHub|
 | Registry Type     |Third-Party Artifact Registry|
-| Docker Connector  |dockerhub|                                                                          |
-| Docker Repository |nikpap/harness-workshop|                                                                          |
+| Docker Connector  |att-dockerhub|                                                                          |
+| Docker Repository |cassiesouza/workshop|                                                                          |
 | Tags              |<+variable.username>-<+pipeline.sequenceId>| This will be the tag of the image using harness expressions              |
 | Dockerfile        |/harness/frontend-app/harness-webapp/Dockerfile| This tells harness where is the Dockerfile for building the app          |
 | Context           |/harness/frontend-app/harness-webapp| This tells from where to run the instructions included in the dockerfile |
@@ -160,7 +160,7 @@ After the **Build and Push** stage is complete, go to the **Security Tests** tab
 
 1. Add a GitOps Repository
 
-- In your Harness project, expand Deployments, select GitOps, and then select Settings
+- In your Harness project, expand Deployments, select GitOps, and then Settings
 - Select Repositories
 - Select New Repository
 - In Specify Repository Type, select Git
@@ -169,84 +169,65 @@ After the **Build and Push** stage is complete, go to the **Security Tests** tab
 
 | Input           | Value          | Notes |
 | --------------- | -------------- | ----- |
-| Repository Name | harnessrepo                                         |       |
-| GitOps Agent    | attworkshop                                |  Click on Organization to find the correct agent      |
-| Git Repository URL | <Add your Harness Code Repo clone url>  |  Grabe the clone url by navigating to Code Repository -> harnessrepo -> clone   |
+| Repository Name | workshop                                         |       |
+| GitOps Agent    | att-workshop                                |  Click on Organization to find the correct agent      |
+| Git Repository URL | <Add YOUR lab repo url from Github>  |     |
 
-- Once at Credentials, select HTTPS, Authentication to Username and Password
-
-
-| Input           | Value          | Notes |
-| --------------- | -------------- | ----- |
-| Username | <Add username>  |  Find this by clicking on clone in your repository, Generate Clone Credential, and copy the User Name     | 
-| Password | <Add clone credential>  | Find this by clicking on clone in your repository, Generate Clone Credential, and copy the Password (API Token) |
-
+- Click on Continue
+- Once at Credentials, select Specify Credentials For Repository, then add the following input
+   - Connection Type: **HTTPS**
+   - Authentication to **Anonymous**
 - Click on Save & Continue
 - Select Finish
 
-2. Add a GitOps Application
+2. Add a GitOps Application Set
 
-- Since we are already in the context of Gitops, select Applications in the top right hand corner
-- In Application Name, enter frontend
-- In GitOps Operator, select Argo
-- In GitOps Agent, select the Agent you added earlier (Organization -> attworkshop)
-- In Service, Click **+Add Service** and configure as follows****
+- In the context of Gitops, select Applications in the top right hand corner
+- Click on Application Set
+- Click on **+New Application Set**
+   - App Set Name: *frontend-appset-<input unique username>*
+   - GitOps Agent: *att-workshop*
+   - Click **+New Service** and configure as follows:
 
 
 | Input                      | Value                                               | Notes                              |
 | -------------------------- | --------------------------------------------------- | ---------------------------------- |
-| Name                       |backend|                                    |
+| Name                       |frontend|                                    |
 | Deployment Type            |Kubernetes|                                    |
 | * **Add Release Repo Manifest**         |                                                     |                                    |                                   |
-| Release Repo Store         |Code|                                    |
+| Release Repo Store         |Github|                                    |
+| Connector        |ATT Workshop|                                    |
 | Manifest Identifier        |clusterconfig|                                    |
-| Repository                 |harnessrepo|                                    |
+| Repository                 |workshop-souzatt6243120|                                    |
 | Branch                     |main|                                    |
 | File Path           |gitops-workshop/cluster-config/<+env.name>/config.json|                                    |
 | * **Add Deployment Repo Manifest**         |                                                     |                                    |                                   |
-| Deployment Repo Store         |Code|                                    |
+| Deployment Repo Store         |Github|                                    |
+| Connector        |ATT Workshop|                                    |
 | Manifest Identifier        |appset|                                    |
-| Repository                 |harnessrepo|                                    |
+| Repository                 |workshop-souzatt6243120|                                    |
 | Branch                     |main|                                    |
 | File Path           |gitops-workshop/appset.yaml|                                    |
-
-| * **Add Artifact Source**        |                                                      |                                                                          |
+| **Add Artifact Source**          |                                                      |                                                                          |
 | Artifact Repository Type         | Docker Registry                                      |                                                                          |
 | Docker Registry Connector        | att-dockerhub                                        |                                                                          |
 | Artifact Source Identifier       | workshop                                             |                                                                          |
 | Image Path                       | cassiesouza/workshop                                 |                                                                          |
-| Tag                              | <+variable.username>-<+pipeline.sequenceId>          | Click on the Sigma next to the input box and choose Expression Variable |
+| Tag                              | <+variable.username>-<+pipeline.sequenceId>          | Click on the Sigma next to the input box and choose Expression Variable  |
 
+- Click on Save
 
-- In Environment, select New Environment, name the Environment dev, and select Pre-Production
-- Select Continue
-- In Sync Policy, select Manual, and then select Continue
-- In Source, configure as follows:
+- In Environment, select **+New Environment**, name the Environment dev, and select Pre-Production
+- Select Save, then Continue
+- In Sync Policy, select Create-Update, and then select Continue
+- In Generators, select Continue
+- In Preview, navigate to your repository at the path *gitops/workshop/manifests/appset.yaml*. Copy the entire contents, and paste them into the Preview
+- UPDATE FILE 
+   - Find *<add unique username>* and replace with your unique username
+- Then *Validate*
+- Once validated, select Finish
 
-
-| Input | Value | Notes |
-| ----- | ----- | ----- |
-| Repository (Repo ID) | harnessrepo | Select the repository you created earlier |
-| Target Revision | main | |
-| Path | gitops/workshop/manifests | |
-
-- Select Continue
-- In Destination, configure as follows: 
-
-
-| Input | Value | Notes |
-| ----- | ----- | ----- |
-| Cluster | in-cluster | Choose the cluster at the organization scope  |
-| Namespace | <Add your project ID> | Open a new tab, click on Overview in the left nav, copy your project ID (i.e cassieatt6240)  |
-
-- Select Finish
-
-**Sync Application**
-
-- Navigate to your Application, select SYNC
-- Select Synchronize 
-  - *In the Synchronize settings wizard, you can change any of the Sync Policy options you set in the Application*
-- You will see the status Progressing and then HEALTHY
+** Your appset should begin cascading two applications. One for dev and one for prod. This will take a couple of minutes**
 
 # Lab 4 - Create PR Pipeline - Dev
 
@@ -258,7 +239,7 @@ After the **Build and Push** stage is complete, go to the **Security Tests** tab
 
 - Create PR pipeline flow for a dev environment
 
-1. In the existing pipeline, add a Deployment stage by clicking **Add Stage** and select **Deploy** as the Stage Type
+1. In your existing pipeline, add a Deployment stage by clicking **Add Stage** and select **Deploy** as the Stage Type
 
 2. Enter the following values and click on **Set Up Stage**
 
@@ -279,9 +260,9 @@ After the **Build and Push** stage is complete, go to the **Security Tests** tab
 
 The target infrastructure has been pre-created for us. The application will be deployed to a k8s cluster on the given namespace  
 
-- Click **- Select -** on the environment input box ****
+- Click **- Select -** on the environment input box
 
-- Select **dev** environment****
+- Select **dev** environment
 
 | Input | Value | Notes                                                             |
 | ----- | ----- | ----------------------------------------------------------------- |
@@ -292,7 +273,9 @@ The target infrastructure has been pre-created for us. The application will be d
 **Execution**
 
 - There should be three steps which are autopopulated: Update Release Repo, Merge PR, and Fetch Linked Apps
-- Click on the Update Release Repo step, open Optional Configuration and input the following values:
+
+**Update Release Repo Step**
+- Click on the Update Release Repo step, open Optional Configuration and input the following values under **Variables**:
 
 
 | Input            | Value            | Notes |
@@ -300,21 +283,21 @@ The target infrastructure has been pre-created for us. The application will be d
 | image_tag       |<+artifacts.primary.tag>|       |
 | harness_service |<+service.identifier>|       |
 | environment     |<+environment.identifier>|       |
+| username     |<+pipeline.variables.username>|       |
 
 **Add PR Approval Step**
 - **After** the Update Release Repo and **before** the Merge PR add **Harness Approval** step according to the table  below
-
-| Input            | Value            | Notes |
-| ---------------- | ---------------- | ----- |
-| Step Name        |Approval|       |
-| Type of Approval |Harness Approval|       |
 
 - Configure the Approval step as follows
 
 | Input       | Value             | Notes |
 | ----------- | ----------------- | ----- |
 | Name        |PR Approval|       |
-| User Groups |All Organization Users|       |
+| User Groups |All Project Users|       |
+
+**Modify Fetch Linked Apps**
+- In the Fetch Linked Apps step, enable the **Filter applications per configured service/env** radio button
+- Apply Changes
 
 **Add GitOps Sync Step**
 - After Fetch Linked Apps, **+Add Step**, select **GitOps Sync** and add the following values
@@ -326,14 +309,36 @@ The target infrastructure has been pre-created for us. The application will be d
 - Click on Apply Changes
 - Click on Save
 
+**Add Username Pipeline Variable**
+- Go to the right nav bar, click on Variables
+- Click **+ Add Variable** in the first section
+- Set Name to `username`
+- Set Value to `<A unique username>`
+- Set variable as required during runtime
+- Click **Apply Changes**
+- Click **Save**
+
+**Add GitOps Cluster to Dev Environment**
+
+- Expand Deployments, then go to Environments, click on dev
+- Once in the dev environment, go to GitOps Clusters, click **+ Select Cluster(s)**
+- Choose Organization at the top, then the in-cluster agent for for the NON prod Agent Id (e.g Agent Id: org.attworkshop)
+- Click Apply Selected
+
 **Run Pipeline**
+- Navigate to Pipelines
+- Click on the workshop pipeline
 - Click on Run
 
 # Lab 5 - Continuous Deployment - Production
 
-- Incorporate an advanced deployment strategy such as Canary
+### Summary: Extend your existing pipeline to deploy to a production environment using GitOps with an advanced deployment strategy
 
-- Create custom Harness variables
+### Learning Objective(s):
+
+- Deploy to a production environment using GitOps
+
+- Incorporate an advanced deployment strategy such as Canary
 
 1. In the existing pipeline, add a Deployment stage by clicking **Add Stage**, select **Use template**, and select **Argo Rollouts - Prod Promotion**, then **Use template**
 
@@ -350,10 +355,12 @@ The target infrastructure has been pre-created for us. The application will be d
 
 - Configure the **Template Inputs** with the following settings:
   - For **Service**, select "Propogate from: [Deploy] - Service [frontend]"
-  - Enable **Deploy to Different Environment** radio button
-  - Enable **Specify Environment**, then click on the sigma icon, choose Fixed Value, and select **prod** from the dropdown in organization scope
+  - Click **Deploy to Different Environment**
+  - In **Specify Environment**, click on the sigma icon on the right, choose Fixed Value, and select **prod** from the dropdown
+  - Click Apply Selected
 
-5. Click **Save**
+6. Click **Save**
+7. Click **Run** Pipeline
 
 # Lab 6 - Governance/Policy as Code
 
@@ -409,56 +416,3 @@ The target infrastructure has been pre-created for us. The application will be d
 | User Groups |All Project Users|       |
 
 6. Click **Save** and note that the save succeeds without any policy failure
-
-# Lab 9 - Governance/Policy as Code (Advanced)
-
-**Create a Policy to block critical CVEs**
-
-1. From the secondary menu, select **Project Settings** and select **Policies**
-
-2. Select the **Policies** tab 
-
-3. click **+ New Policy**, set the name to **Runtime OWASP CVEs** and click **Apply**
-
-4. Set the rego to the following and click **Save**
-
-<!---->
-
-    package pipeline_environment
-    deny[sprintf("Node OSS Can't contain any critical vulnerability '%d'", [input.NODE_OSS_CRITICAL_COUNT])] {  
-       input.NODE_OSS_CRITICAL_COUNT != 0
-    }
-
-5. Select the **Policy Sets** tab
-
-6. Click **+ New Policy Set** and configure as follows
-
-| Input                      | Value                     | Notes |
-| -------------------------- | ------------------------- | ----- |
-| Name                       |Criticals Not Allowed|       |
-| Entity Type                |Custom|       |
-| Event Evaluation           |On Step|       |
-| Policy Evaluation Criteria |                           |       |
-| Policy to Evaluate         |Runtime OWASP CVEs|       |
-
-7. For the new policy set, toggle the **Enforced** button
-
-**Add Policy to Pipeline**
-
-1. Open your pipeline
-
-2. Go to an execution that already ran, and copy the CRITICAL output variable from the OWASP step like so:\
-   ![](https://lh7-us.googleusercontent.com/docsz/AD_4nXfYQ7ba5Q_cQ9xy2AFVZ5Mt0iZPYbyQDmBonp0pBQA13Z_IUeYdK8gRSbddtf_V3bSRfbhKWDbRSUVJTx3BTCc_VmwLIWyWLkdh89nLh0sEBA6fqQxTy0NADZ0YPZwCirNycRVGUQACdItaBotovPs5Hg6CmRpQHk5ysgV6RUlhSbIbkNxmHAo?key=cRG2cvp_PHVW0KG2Gq6Y_A)
-
-3. Select the **frontend** stage
-
-4. Before the **Rollout Deployment** Step Group, add a **Policy** type step and configure as follow
-
-| Input       | Value                                          | Notes                                                                                                                                                   |
-| ----------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Name        |Policy - No Critical CVEs|                                                                                                                                                         |
-| Entity Type |Custom|                                                                                                                                                         |
-| Policy Set  |Criticals Not Allowed| Make sure to select the Project tab in order to see your Policy Set                                                                                     |
-| Payload     |{"NODE\_OSS\_CRITICAL\_COUNT": _\<variable>_}| Set the field type to Expression, then replace _\<variable>_ with OWASP output variable CRITICAL. Go to a previous execution to copy the variable path. |
-
-5. Save the pipeline and execute. Note that the pipeline fails at the policy evaluation step due to critical vulnerabilities being found by OWASP.
